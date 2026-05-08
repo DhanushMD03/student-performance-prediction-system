@@ -16,6 +16,44 @@ st.set_page_config(
 )
 
 # =========================================
+# CUSTOM CSS
+# =========================================
+
+st.markdown("""
+<style>
+
+.main {
+    background-color: #0E1117;
+}
+
+.stProgress > div > div > div > div {
+    background-color: #00C853;
+}
+
+.result-box {
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.pass-box {
+    background-color: #0f5132;
+    color: white;
+}
+
+.fail-box {
+    background-color: #842029;
+    color: white;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================
 # TITLE
 # =========================================
 
@@ -68,8 +106,6 @@ pass_students = len(df[df['Final_Result'] == 1])
 fail_students = len(df[df['Final_Result'] == 0])
 
 pass_rate = (pass_students / total_students) * 100
-
-# Create columns
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -147,31 +183,85 @@ if st.sidebar.button("Predict Performance"):
         fail_probability = probability[0][0] * 100
 
         # =========================================
-        # RESULTS
+        # VISUAL RESULT SECTION
         # =========================================
 
-        st.subheader("Prediction Result")
+        st.header("🎯 Prediction Dashboard")
 
-        if prediction[0] == 1:
-            st.success("✅ Student is likely to PASS")
-        else:
-            st.error("❌ Student is likely to FAIL")
-
-        st.write(f"### Pass Probability: {pass_probability:.2f}%")
-        st.write(f"### Fail Probability: {fail_probability:.2f}%")
+        result_col1, result_col2 = st.columns(2)
 
         # =========================================
-        # RISK LEVEL
+        # RESULT CARD
         # =========================================
 
-        if fail_probability > 70:
-            st.error("🔴 HIGH RISK STUDENT")
+        with result_col1:
 
-        elif fail_probability > 40:
-            st.warning("🟠 MEDIUM RISK STUDENT")
+            if prediction[0] == 1:
 
-        else:
-            st.success("🟢 LOW RISK STUDENT")
+                st.markdown(
+                    f"""
+                    <div class="result-box pass-box">
+                    ✅ STUDENT IS LIKELY TO PASS
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            else:
+
+                st.markdown(
+                    f"""
+                    <div class="result-box fail-box">
+                    ❌ STUDENT IS LIKELY TO FAIL
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        # =========================================
+        # RISK LEVEL CARD
+        # =========================================
+
+        with result_col2:
+
+            if fail_probability > 70:
+                st.error("🔴 HIGH RISK STUDENT")
+
+            elif fail_probability > 40:
+                st.warning("🟠 MEDIUM RISK STUDENT")
+
+            else:
+                st.success("🟢 LOW RISK STUDENT")
+
+        # =========================================
+        # PROGRESS BARS
+        # =========================================
+
+        st.subheader("📊 Prediction Confidence")
+
+        st.write(f"✅ Pass Probability: {pass_probability:.2f}%")
+
+        st.progress(int(pass_probability))
+
+        st.write(f"❌ Fail Probability: {fail_probability:.2f}%")
+
+        st.progress(int(fail_probability))
+
+        # =========================================
+        # GAUGE STYLE METRICS
+        # =========================================
+
+        metric1, metric2 = st.columns(2)
+
+        metric1.metric(
+            "PASS %",
+            f"{pass_probability:.2f}%"
+        )
+
+        metric2.metric(
+            "FAIL %",
+            f"{fail_probability:.2f}%"
+        )
 
         # =========================================
         # AI RECOMMENDATIONS
@@ -202,6 +292,26 @@ if st.sidebar.button("Predict Performance"):
         else:
             for rec in recommendations:
                 st.warning(rec)
+
+        # =========================================
+        # PERFORMANCE SCORE
+        # =========================================
+
+        st.subheader("🏆 Student Performance Score")
+
+        performance_score = (
+            (studytime * 10)
+            + (G1 * 2)
+            + (G2 * 2)
+            - (failures * 5)
+            - (absences * 0.3)
+        )
+
+        performance_score = max(0, min(100, performance_score))
+
+        st.write(f"Performance Score: {performance_score:.2f}/100")
+
+        st.progress(int(performance_score))
 
     except Exception as e:
         st.error(f"Prediction Error: {e}")
@@ -337,5 +447,7 @@ st.markdown("""
 ✅ Data Visualization  
 ✅ Feature Importance Analysis  
 ✅ AI Recommendations  
+✅ Visual Prediction Dashboard  
+✅ Performance Score Analysis  
 ✅ Random Forest Classifier  
 """)
